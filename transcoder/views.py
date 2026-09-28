@@ -43,17 +43,17 @@ class StreamAPIView(APIView):
         stream_id , path = get_stream_path()
 
         try:
-            s3_uri = s3_service_instance.upload_file(stream, path)
+            gcs_service_instance.upload_file(stream, path)
         except Exception:
-            logger.exception("S3 upload failed for %s ", stream.name)
+            logger.exception("GCS staging upload failed for %s ", stream.name)
             return Response(
                 {"error": {"message": "Upload failed."}},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         try:
-            gcs_service_instance.upload_file(stream, path)
+            s3_uri = s3_service_instance.upload_file(stream, path)
         except Exception:
-            logger.exception("GCS staging upload failed for %s ", stream.name)
+            logger.exception("S3 upload failed for %s ", stream.name)
             return Response(
                 {"error": {"message": "Upload failed."}},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

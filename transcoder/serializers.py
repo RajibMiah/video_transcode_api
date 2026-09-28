@@ -24,14 +24,14 @@ class StreamSerializer(serializers.ModelSerializer):
         info = get_mp4_info(value)
         if info is None or info.brand == b"qt  " or b"vide" not in info.tracks:
             raise serializers.ValidationError("File is not a valid MP4 video.")
+        if b"soun" not in info.tracks:
+            raise serializers.ValidationError("Videos without an audio track are not supported yet.")
         if info.fragmented:
             raise serializers.ValidationError("Fragmented MP4 files are not supported yet.")
         if info.length <= 0:
             raise serializers.ValidationError("Video is empty or corrupt.")
         if info.length > MAX_DURATION_SECONDS:
             raise serializers.ValidationError(f"Video is longer than {MAX_DURATION_SECONDS // 60} minutes.")
-        if b"soun" not in info.tracks:
-            raise serializers.ValidationError("Videos without an audio track are not supported yet.")
         return value
 
     def create(self, validated_data):

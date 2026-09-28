@@ -52,8 +52,8 @@ class TranscodeTask:
         s3_folder = stream.s3_uri[len(f"s3://{settings.AWS_S3_BUCKET_NAME}/"):].rsplit("/", 1)[0] + "/"
 
         variants_meta = [
-            {"resolution": "1080p", "fps": 60, "filename": f"{stream.id}_1080p_60fps_video.mp4"},
-            {"resolution": "720p", "fps": 30, "filename": f"{stream.id}_720p_30fps_video.mp4"},
+            {"resolution": "1080p", "fps": 60, "filename": f"{stream.id}_1080p_60fps.mp4"},
+            {"resolution": "720p", "fps": 30, "filename": f"{stream.id}_720p_30fps.mp4"},
         ]
 
         for v in variants_meta:

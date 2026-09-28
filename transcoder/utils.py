@@ -18,7 +18,7 @@ def should_retry(stream):
 
 def get_stream_path():
     stream_id = str(uuid.uuid4()) 
-    path = f"videos/{stream_id}.mp4"
+    path = f"upload/{stream_id}.mp4"
     return stream_id, path
 
 @dataclass
@@ -34,10 +34,14 @@ def get_mp4_info(file):
         file.seek(0)
         atoms = Atoms(file)
         moov = atoms[b"moov"]
+        try:
+            length = MP4Info(atoms, file).length
+        except MutagenError:
+            length = 0
         return Mp4Info(
             brand=atoms[b"ftyp"].read(file)[1][:4],
             tracks={t[b"mdia", b"hdlr"].read(file)[1][8:12] for t in moov.findall(b"trak")},
-            length=MP4Info(atoms, file).length,
+            length=length,
             fragmented=any(a.name == b"mvex" for a in moov.children),
         )
     except (MutagenError, KeyError):
