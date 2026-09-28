@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 
 class StreamStatus(models.TextChoices):
+    UPLOADING = "uploading", "Uploading" 
     QUEUED = "queued", "Queued"
     PROCESSING = "processing", "Processing"
     COMPLETE = "complete", "Complete"

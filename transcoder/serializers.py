@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from transcoder.models import Stream , StreamVariant
 from transcoder.constants import MAX_FILE_SIZE , STREAM_READ_ONLY_FIELDS
-from transcoder.utils import get_file_type
+from transcoder.utils import get_file_type , has_audio_track
 
 class StreamVariantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,6 +26,9 @@ class StreamSerializer(serializers.ModelSerializer):
         file_type = get_file_type(value)
         if file_type is None or file_type.mime != "video/mp4":
             raise serializers.ValidationError("File content does not match a valid MP4 format")
+
+        if not has_audio_track(value):
+            raise serializers.ValidationError("Videos without an audio track are not supported yet.")
         return value
 
     def create(self, validated_data):

@@ -20,5 +20,4 @@ class S3Client:
         )
         return f"s3://{self.bucket_name}/{key}"
 
-
 s3_service_instance = S3Client()
