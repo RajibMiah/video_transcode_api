@@ -11,10 +11,14 @@ from transcoder.services.gcs_client import gcs_service_instance
 from transcoder.services.s3_client import s3_service_instance
 from transcoder.tasks import create_transcode_job
 from transcoder.utils import get_file_hash, should_retry , get_stream_path
+from rest_framework.throttling import ScopedRateThrottle
 
 logger = logging.getLogger(__name__)
 
 class StreamAPIView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "uploads"
+
     def post(self, request):
         serialized_data = StreamSerializer(data=request.data)
         serialized_data.is_valid(raise_exception=True)
@@ -50,6 +54,7 @@ class StreamAPIView(APIView):
                 {"error": {"message": "Upload failed."}},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+        # Must stay last: boto3's upload_fileobj closes the file when it finishes.
         try:
             s3_uri = s3_service_instance.upload_file(stream, path)
         except Exception:

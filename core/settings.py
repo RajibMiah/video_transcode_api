@@ -43,6 +43,16 @@ DATABASES = {
         "OPTIONS": {"charset": "utf8mb4"},
     }
 }
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_RATES": {"uploads": "10/hour"},
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.getenv("CACHE_URL", "redis://redis:6379/1"),
+    }
+}
 
 GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
