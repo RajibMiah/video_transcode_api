@@ -6,7 +6,7 @@ from django.db import transaction , IntegrityError
 from rest_framework.views import APIView
 from transcoder.models import Stream, StreamStatus
 from rest_framework import status
-from transcoder.serializers import StreamSerializer
+from transcoder.serializers import StreamSerializer , StreamVariantSerializer
 from transcoder.services.gcs_client import gcs_service_instance
 from transcoder.services.s3_client import s3_service_instance
 from transcoder.tasks import create_transcode_job
@@ -35,22 +35,25 @@ class StreamAPIView(APIView):
                     transaction.on_commit(lambda: create_transcode_job.delay(str(has_stream.id)))
                 has_stream.refresh_from_db()
                 
-            return Response({"id": str(has_stream.id), "status": has_stream.status, "duplicate": True})
+            data = {"id": str(has_stream.id), "status": has_stream.status, "duplicate": True}
+            if has_stream.status == StreamStatus.COMPLETE:
+                data["variants"] = StreamVariantSerializer(has_stream.variants.all(), many=True).data
+            return Response(data)
         
         stream_id , path = get_stream_path()
 
         try:
-            s3_uri = s3_service_instance.upload_file(stream, path)
+            gcs_service_instance.upload_file(stream, path)
         except Exception:
-            logger.exception("S3 upload failed for %s ", stream.name)
+            logger.exception("GCS staging upload failed for %s ", stream.name)
             return Response(
                 {"error": {"message": "Upload failed."}},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         try:
-            gcs_service_instance.upload_file(stream, path)
+            s3_uri = s3_service_instance.upload_file(stream, path)
         except Exception:
-            logger.exception("GCS staging upload failed for %s ", stream.name)
+            logger.exception("S3 upload failed for %s ", stream.name)
             return Response(
                 {"error": {"message": "Upload failed."}},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

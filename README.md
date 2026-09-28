@@ -135,6 +135,34 @@ Accepts `multipart/form-data`.
 ```json
 { "error": { "message": "Upload failed." } }
 ```
+**200 Completed**, 
+```json
+{
+    "id": "acc7f7ef-3457-4559-ad54-278a532e42f6",
+    "status": "complete",
+    "duplicate": true,
+    "variants": [
+        {
+            "id": "2f32fdde-4afa-46e3-b0b0-df31b1aeb22f",
+            "created_at": "2026-09-28T03:34:07.155565-05:00",
+            "updated_at": "2026-09-28T03:34:07.155624-05:00",
+            "resolution": "1080p",
+            "fps": 60,
+            "uri": "s3://clyapp-s3-video-storage/videos/acc7f7ef-3457-4559-ad54-278a532e42f6_1080p_60fps_video.mp4",
+            "stream": "acc7f7ef-3457-4559-ad54-278a532e42f6"
+        },
+        {
+            "id": "355f880e-c84a-441e-9ec0-0c0cce3871c0",
+            "created_at": "2026-09-28T03:34:22.238304-05:00",
+            "updated_at": "2026-09-28T03:34:22.238333-05:00",
+            "resolution": "720p",
+            "fps": 30,
+            "uri": "s3://clyapp-s3-video-storage/videos/acc7f7ef-3457-4559-ad54-278a532e42f6_720p_30fps_video.mp4",
+            "stream": "acc7f7ef-3457-4559-ad54-278a532e42f6"
+        }
+    ]
+}
+```
 
 ---
 
