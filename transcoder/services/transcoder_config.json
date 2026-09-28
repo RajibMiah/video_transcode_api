@@ -6,7 +6,8 @@
         "h264": {
           "heightPixels": 1080,
           "frameRate": 60,
-          "bitrateBps": 10000000
+          "bitrateBps": 10000000,
+          "frameRateConversionStrategy": "DROP_DUPLICATE"
         }
       }
     },
@@ -16,7 +17,8 @@
         "h264": {
           "heightPixels": 720,
           "frameRate": 30,
-          "bitrateBps": 4000000
+          "bitrateBps": 4000000,
+          "frameRateConversionStrategy": "DROP_DUPLICATE"
         }
       }
     },
