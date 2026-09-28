@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from transcoder.models import Stream , StreamVariant
-from transcoder.constants import MAX_FILE_SIZE , STREAM_READ_ONLY_FIELDS
-from transcoder.utils import get_file_type , has_audio_track
+from transcoder.constants import MAX_FILE_SIZE , STREAM_READ_ONLY_FIELDS , MAX_DURATION_SECONDS
+from transcoder.utils import  get_mp4_info
 
 class StreamVariantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,16 +18,19 @@ class StreamSerializer(serializers.ModelSerializer):
         read_only_fields = STREAM_READ_ONLY_FIELDS
 
     def validate_video_files(self, value):
-        if not (value.content_type or "").startswith("video/"):
-            raise serializers.ValidationError("Invalid content type")
         if value.size > MAX_FILE_SIZE:
             raise serializers.ValidationError("File too large.")
 
-        file_type = get_file_type(value)
-        if file_type is None or file_type.mime != "video/mp4":
-            raise serializers.ValidationError("File content does not match a valid MP4 format")
-
-        if not has_audio_track(value):
+        info = get_mp4_info(value)
+        if info is None or info.brand == b"qt  " or b"vide" not in info.tracks:
+            raise serializers.ValidationError("File is not a valid MP4 video.")
+        if info.fragmented:
+            raise serializers.ValidationError("Fragmented MP4 files are not supported yet.")
+        if info.length <= 0:
+            raise serializers.ValidationError("Video is empty or corrupt.")
+        if info.length > MAX_DURATION_SECONDS:
+            raise serializers.ValidationError(f"Video is longer than {MAX_DURATION_SECONDS // 60} minutes.")
+        if b"soun" not in info.tracks:
             raise serializers.ValidationError("Videos without an audio track are not supported yet.")
         return value
 

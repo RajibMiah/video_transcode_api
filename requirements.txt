@@ -3,7 +3,6 @@ asgiref==3.12.1
 billiard==4.3.0
 celery==5.6.3
 boto3
-django-storages
 certifi==2026.7.22
 cffi==2.1.1
 mutagen==1.48.1
@@ -30,7 +29,6 @@ gunicorn==26.2.0
 idna==3.20
 kombu==5.6.2
 mysqlclient==2.3.0
-opentelemetry-api==1.44.0
 packaging==26.3
 prompt_toolkit==3.0.53
 proto-plus==1.28.4
@@ -40,7 +38,6 @@ pyasn1_modules==0.4.2
 pycparser==3.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.3
-python-magic==0.4.27
 requests==2.34.2
 six==1.17.0
 sqlparse==0.6.0

@@ -1,10 +1,9 @@
 import hashlib
 import uuid
-import filetype
 from transcoder.models import StreamStatus
+from dataclasses import dataclass
 from mutagen import MutagenError
-from mutagen.mp4 import MP4
-
+from mutagen.mp4 import Atoms, MP4Info
 
 def get_file_hash(file):
     sha256 = hashlib.sha256()
@@ -13,10 +12,6 @@ def get_file_hash(file):
     file.seek(0)
     return sha256.hexdigest()
 
-def get_file_type(file):
-    head = file.read(262)
-    file.seek(0)
-    return filetype.guess(head)
 
 def should_retry(stream):
     return stream.status == StreamStatus.FAILED
@@ -26,11 +21,26 @@ def get_stream_path():
     path = f"videos/{stream_id}/source.mp4"
     return stream_id, path
 
-def has_audio_track(file):
+@dataclass
+class Mp4Info:
+    brand: bytes
+    tracks: set
+    length: float
+    fragmented: bool
+
+
+def get_mp4_info(file):
     try:
         file.seek(0)
-        return MP4(file).info.channels > 0
-    except MutagenError:
-        return True
+        atoms = Atoms(file)
+        moov = atoms[b"moov"]
+        return Mp4Info(
+            brand=atoms[b"ftyp"].read(file)[1][:4],
+            tracks={t[b"mdia", b"hdlr"].read(file)[1][8:12] for t in moov.findall(b"trak")},
+            length=MP4Info(atoms, file).length,
+            fragmented=any(a.name == b"mvex" for a in moov.children),
+        )
+    except (MutagenError, KeyError):
+        return None
     finally:
         file.seek(0)
