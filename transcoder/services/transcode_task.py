@@ -24,13 +24,22 @@ class TranscodeTask:
         self.client = transcoder_v1.TranscoderServiceClient()
         self.parent = f"projects/{settings.GCP_PROJECT_ID}/locations/{settings.GCP_LOCATION}"
 
-    def create_job(self, stream_id, input_uri, output_uri, file_prefix):
-        job = transcoder_v1.types.Job(
-            input_uri=input_uri,
-            output_uri=output_uri,
-            config=build_job_config(file_prefix),
+    def find_job(self, stream_id):
+        jobs = self.client.list_jobs(
+            request={"parent": self.parent, "filter": f'labels.stream_id="{stream_id}"'}
         )
-        response = self.client.create_job(parent=self.parent, job=job)
+        return next((j for j in jobs if j.state.name != "FAILED"), None)
+
+    def create_job(self, stream_id, input_uri, output_uri, file_prefix, has_audio=True):
+        response = self.find_job(stream_id) or self.client.create_job(
+            parent=self.parent,
+            job=transcoder_v1.types.Job(
+                input_uri=input_uri,
+                output_uri=output_uri,
+                config=build_job_config(file_prefix, has_audio),
+                labels={"stream_id": str(stream_id)},
+            ),
+        )
 
         Stream.objects.filter(id=stream_id).update(
             job_name=response.name,
@@ -82,6 +91,4 @@ class TranscodeTask:
         Stream.objects.filter(id=video_id).update(
             status=StreamStatus.FAILED, error=error_message, updated_at=timezone.now()
         )
-
-
 task_instance = TranscodeTask()
