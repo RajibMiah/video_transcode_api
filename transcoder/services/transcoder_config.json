@@ -1,0 +1,45 @@
+{
+  "elementaryStreams": [
+    {
+      "key": "video-stream-1080p",
+      "videoStream": {
+        "h264": {
+          "heightPixels": 1080,
+          "frameRate": 60,
+          "bitrateBps": 10000000
+        }
+      }
+    },
+    {
+      "key": "video-stream-720p",
+      "videoStream": {
+        "h264": {
+          "heightPixels": 720,
+          "frameRate": 30,
+          "bitrateBps": 4000000
+        }
+      }
+    },
+    {
+      "key": "audio-stream",
+      "audioStream": {
+        "codec": "aac",
+        "bitrateBps": 128000
+      }
+    }
+  ],
+  "muxStreams": [
+    {
+      "key": "1080p60fps",
+      "container": "mp4",
+      "elementaryStreams": ["video-stream-1080p", "audio-stream"],
+      "fileName": "1080p_60fps_video.mp4"
+    },
+    {
+      "key": "720p30fps",
+      "container": "mp4",
+      "elementaryStreams": ["video-stream-720p", "audio-stream"],
+      "fileName": "720p_30fps_video.mp4"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - ${GOOGLE_APPLICATION_CREDENTIALS_HOST}:/app/gcp-service-account.json:ro
+    ports:
+      - "8000:8000"
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 600
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-service-account.json
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build: .
+    restart: unless-stopped
+    command: celery -A core worker -l info --concurrency=4
+    volumes:
+      - .:/app
+      - ${GOOGLE_APPLICATION_CREDENTIALS_HOST}:/app/gcp-service-account.json:ro
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-service-account.json
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  mysql_data:
