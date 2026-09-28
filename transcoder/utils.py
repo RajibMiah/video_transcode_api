@@ -18,7 +18,7 @@ def should_retry(stream):
 
 def get_stream_path():
     stream_id = str(uuid.uuid4()) 
-    path = f"videos/{stream_id}/source.mp4"
+    path = f"videos/{stream_id}.mp4"
     return stream_id, path
 
 @dataclass
